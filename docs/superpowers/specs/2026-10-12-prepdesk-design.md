@@ -129,6 +129,14 @@ User-facing errors are generic and never include the prompt or model output. Log
 
 `.env.example` lists: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_SITE_URL`. Real values live only in `.env.local` (git-ignored) and in Vercel. The owner creates all accounts and enters all keys.
 
+### Demo mode (added 2026-10-12)
+
+`ANTHROPIC_API_KEY` is optional. Without it the app runs in demo mode so the live demo costs nothing:
+
+- The report route uses `lib/demo-report.ts` instead of Claude: a deterministic generator that picks known skills and tools from the posting and fills fixed sentence templates. Its output goes through the same zod validation and retry loop, so the credit ledger, rate limit, limits and Stripe flow behave exactly as with Claude.
+- The Claude path (`lib/claude.ts`, private prompt, retries) stays in the code and in the unit tests; setting the key switches to it with no code change.
+- Every report page shows "Demo mode: AI output simulated" while demo mode is on, and the README states that the live demo runs in demo mode for cost reasons and points to the Claude code path. Simulated output is never presented as AI output.
+
 ## 11. Deployment and publishing
 
 - Vercel project linked to `loicduong/prepdesk`; environment variables set in Vercel; production webhook endpoint registered in Stripe; site URL added to Supabase Auth redirect URLs.
