@@ -1,6 +1,6 @@
 # PrepDesk
 
-Paste a job posting, get an interview-prep report. A small paid web app built as a portfolio demo: sign-in, a monthly credit ledger, Stripe subscriptions, and an AI call whose prompt and API key never leave the server.
+Paste a job posting, get an interview-prep report. A small paid web app built as a portfolio demo: instant guest accounts (no sign-up), a monthly credit ledger, Stripe subscriptions, and an AI call whose prompt and API key never leave the server.
 
 **Live demo:** <VERCEL_URL> (Stripe test mode, card 4242 4242 4242 4242)
 
@@ -52,7 +52,7 @@ Ledger concurrency test passed
 
 ## Demo mode
 
-The live demo runs without an Anthropic API key to keep it free, so report text comes from a deterministic generator (`lib/demo-report.ts`) and every report is labelled "Demo mode: AI output simulated". Everything else is real: sign-in, the credit ledger, rate limits, monthly limits and Stripe test billing. Set `ANTHROPIC_API_KEY` and the same route calls Claude (`lib/claude.ts`) with the private prompt, structured output and up to 3 attempts, with no code change.
+The live demo runs without an Anthropic API key to keep it free, so report text comes from a deterministic generator (`lib/demo-report.ts`) and every report is labelled "Demo mode: AI output simulated". Everything else is real: per-visitor guest accounts, the credit ledger, rate limits, monthly limits and Stripe test billing. Set `ANTHROPIC_API_KEY` and the same route calls Claude (`lib/claude.ts`) with the private prompt, structured output and up to 3 attempts, with no code change.
 
 ## Stripe
 
@@ -69,15 +69,15 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook \
   --events checkout.session.completed,customer.subscription.updated,customer.subscription.deleted,invoice.paid
 ```
 
-In Supabase, enable Authentication → Sign In / Providers → Allow anonymous sign-ins for the guest button.
+In Supabase, enable Authentication → Sign In / Providers → Allow anonymous sign-ins so visitors get a guest session automatically.
 
 Checks: `npm run lint && npm run typecheck && npm test`
 
 ## Manual checklist
 
-1. Click "Try the demo — no sign-up" → lands on New report with Guest in the nav.
+1. Open the site → lands on New report with Guest in the nav (no sign-up).
 2. Generate a report → report page with 5 sections; History lists it.
 3. Generate until the Free limit → "You've used 3 of 3 reports this month" with an upgrade link.
 4. Upgrade with 4242 4242 4242 4242 → success page shows Pro is active; limit becomes 30.
 5. Manage billing → Stripe Customer Portal opens; cancel at period end keeps Pro.
-6. Open a report URL in a private window as a second guest → 404.
+6. Open a report URL in a private window (a new guest) → 404.

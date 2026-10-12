@@ -25,7 +25,8 @@ export default function NewReportForm() {
       return;
     }
     if (res.status === 401) {
-      router.push("/login");
+      // Session expired: reloading lets the proxy start a fresh guest session.
+      window.location.reload();
       return;
     }
     setError({ message: body.error, upgrade: res.status === 402 });

@@ -27,6 +27,6 @@ export async function createServerSupabase() {
 export async function requireUser() {
   const supabase = await createServerSupabase();
   const { data } = await supabase.auth.getUser();
-  if (!data.user) redirect("/login");
+  if (!data.user) redirect("/unavailable");
   return data.user;
 }
