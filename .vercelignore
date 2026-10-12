@@ -1,0 +1,5 @@
+.env*
+!.env.example
+.superpowers
+.claude
+supabase/.temp
