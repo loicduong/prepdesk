@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { env } from "@/lib/env";
 
 export const runtime = "nodejs";
@@ -20,12 +20,12 @@ export async function POST() {
 
   let customer = profile?.stripe_customer_id as string | null;
   if (!customer) {
-    const created = await stripe.customers.create({ email: user.email, metadata: { user_id: user.id } });
+    const created = await getStripe().customers.create({ email: user.email, metadata: { user_id: user.id } });
     customer = created.id;
     await supabaseAdmin.from("profiles").update({ stripe_customer_id: customer }).eq("user_id", user.id);
   }
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: "subscription",
     customer,
     client_reference_id: user.id,

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { env } from "@/lib/env";
 
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ export async function POST() {
     return NextResponse.json({ error: "No billing account yet. Upgrade first." }, { status: 400 });
   }
 
-  const session = await stripe.billingPortal.sessions.create({
+  const session = await getStripe().billingPortal.sessions.create({
     customer: profile.stripe_customer_id,
     return_url: `${env.NEXT_PUBLIC_SITE_URL}/billing`,
   });
