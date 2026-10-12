@@ -131,7 +131,7 @@ User-facing errors are generic and never include the prompt or model output. Log
 
 ### Guest sign-in (added 2026-10-12)
 
-Supabase's default email service only reaches project team members and sends a few emails per hour, so magic links cannot carry a public demo. The login page leads with a "Try the demo — no sign-up" button that calls Supabase anonymous sign-in: each visitor gets their own user, profile, ledger and Stripe test checkout. The email magic link stays below it as a secondary option. The nav shows "Guest" for anonymous users. Owner setting: Authentication → Sign In / Providers → Allow anonymous sign-ins. A guest account is lost when its cookies are cleared, which is acceptable for a demo.
+Supabase's default email service only reaches project team members and sends a few emails per hour, so magic links cannot carry a public demo. There is no login page: when a page request arrives without a session, `proxy.ts` calls Supabase anonymous sign-in and the visitor lands straight in the app as a guest with their own user, profile, ledger and Stripe test checkout. API routes, static files and known crawler user agents never start a guest session, so link previews and bots do not create users. If anonymous sign-in fails (disabled or rate-limited), app pages redirect to `/unavailable`, which explains the problem and offers a retry. The nav shows "Guest". Owner setting: Authentication → Sign In / Providers → Allow anonymous sign-ins. A guest account is lost when its cookies are cleared, which is acceptable for a demo. Email magic link and Google sign-in are removed.
 
 ### Demo mode (added 2026-10-12)
 
