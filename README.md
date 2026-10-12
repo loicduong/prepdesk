@@ -48,6 +48,10 @@ Ledger concurrency test passed
 - Errors shown to users are generic; logs record IDs and timings only.
 - Row Level Security: users can read only their own rows; all writes go through SQL functions run by the server.
 
+## Demo mode
+
+The live demo runs without an Anthropic API key to keep it free, so report text comes from a deterministic generator (`lib/demo-report.ts`) and every report is labelled "Demo mode: AI output simulated". Everything else is real: sign-in, the credit ledger, rate limits, monthly limits and Stripe test billing. Set `ANTHROPIC_API_KEY` and the same route calls Claude (`lib/claude.ts`) with the private prompt, structured output and up to 3 attempts, with no code change.
+
 ## Stripe
 
 Checkout creates the subscription; webhooks are the only thing that change a plan. Each event ID is processed once; replays return 200 without side effects. An event for an unknown customer returns 500 so Stripe retries.

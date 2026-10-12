@@ -3,6 +3,8 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { credits } from "@/lib/credits";
 import { generateWithRetries } from "@/lib/generate";
 import { callClaudeOnce } from "@/lib/claude";
+import { buildDemoReport } from "@/lib/demo-report";
+import { demoMode } from "@/lib/env";
 import { createReport } from "@/lib/report-service";
 
 export const runtime = "nodejs";
@@ -19,10 +21,19 @@ export async function POST(request: Request) {
   const started = Date.now();
   const result = await createReport(data.user.id, text, {
     ...credits,
-    generate: (posting) => generateWithRetries(() => callClaudeOnce(posting)),
+    generate: (posting) =>
+      generateWithRetries(demoMode ? async () => buildDemoReport(posting) : () => callClaudeOnce(posting)),
     now: () => new Date(),
   });
-  console.info(JSON.stringify({ event: "create_report", user: data.user.id, status: result.status, ms: Date.now() - started }));
+  console.info(
+    JSON.stringify({
+      event: "create_report",
+      mode: demoMode ? "demo" : "claude",
+      user: data.user.id,
+      status: result.status,
+      ms: Date.now() - started,
+    }),
+  );
 
   return NextResponse.json(result.body, { status: result.status });
 }

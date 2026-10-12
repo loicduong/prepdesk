@@ -1,3 +1,4 @@
+import { demoMode } from "@/lib/env";
 import { createServerSupabase } from "@/lib/supabase/server";
 import NewReportForm from "./NewReportForm";
 
@@ -8,6 +9,11 @@ export default async function NewReportPage() {
   return (
     <main className="space-y-4">
       <h1 className="text-2xl font-semibold">New prep report</h1>
+      {demoMode && (
+        <p className="rounded bg-amber-100 px-3 py-2 text-sm text-amber-900">
+          Demo mode: AI output simulated. The Claude integration is in lib/claude.ts and runs when ANTHROPIC_API_KEY is set.
+        </p>
+      )}
       {usage && (
         <p className="text-sm text-gray-600">
           {usage.plan === "pro" ? "Pro" : "Free"} plan · {usage.remaining} of {usage.monthly_limit} reports left this month

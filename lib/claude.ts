@@ -7,12 +7,17 @@ import { ReportSchema } from "@/lib/report-schema";
 
 export class ModelOutputError extends Error {}
 
-// Our own retry loop (lib/generate.ts) owns retries, so the SDK must not retry.
-const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, timeout: 25_000, maxRetries: 0 });
+let client: Anthropic | null = null;
+
+function getClient() {
+  // Our own retry loop (lib/generate.ts) owns retries, so the SDK must not retry.
+  client ??= new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, timeout: 25_000, maxRetries: 0 });
+  return client;
+}
 
 export async function callClaudeOnce(postingText: string): Promise<unknown> {
   // Beta namespace: server-side fallback when the model declines is a beta feature.
-  const response = await client.beta.messages.parse({
+  const response = await getClient().beta.messages.parse({
     model: env.ANTHROPIC_MODEL,
     max_tokens: 4000,
     system: REPORT_SYSTEM_PROMPT,

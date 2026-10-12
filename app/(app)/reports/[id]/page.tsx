@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { demoMode } from "@/lib/env";
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { Report } from "@/lib/report-schema";
 
@@ -23,6 +24,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   return (
     <main className="space-y-6">
       <h1 className="text-2xl font-semibold">Interview prep report</h1>
+      {demoMode && (
+        <p className="rounded bg-amber-100 px-3 py-2 text-sm text-amber-900">
+          Demo mode: AI output simulated. The Claude integration is in lib/claude.ts and runs when ANTHROPIC_API_KEY is set.
+        </p>
+      )}
       <p>{report.role_summary}</p>
       {SECTIONS.map(([key, title]) => (
         <section key={key} className="space-y-2">
