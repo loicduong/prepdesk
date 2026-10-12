@@ -129,6 +129,10 @@ User-facing errors are generic and never include the prompt or model output. Log
 
 `.env.example` lists: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_SITE_URL`. Real values live only in `.env.local` (git-ignored) and in Vercel. The owner creates all accounts and enters all keys.
 
+### Guest sign-in (added 2026-10-12)
+
+Supabase's default email service only reaches project team members and sends a few emails per hour, so magic links cannot carry a public demo. The login page leads with a "Try the demo — no sign-up" button that calls Supabase anonymous sign-in: each visitor gets their own user, profile, ledger and Stripe test checkout. The email magic link stays below it as a secondary option. The nav shows "Guest" for anonymous users. Owner setting: Authentication → Sign In / Providers → Allow anonymous sign-ins. A guest account is lost when its cookies are cleared, which is acceptable for a demo.
+
 ### Demo mode (added 2026-10-12)
 
 `ANTHROPIC_API_KEY` is optional. Without it the app runs in demo mode so the live demo costs nothing:
