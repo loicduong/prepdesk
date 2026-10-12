@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/supabase/server";
+import { displayName } from "@/lib/display-name";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
@@ -10,7 +11,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Link href="/new">New report</Link>
         <Link href="/reports">History</Link>
         <Link href="/billing">Billing</Link>
-        <span className="ml-auto text-gray-500">{user.email}</span>
+        <span className="ml-auto text-gray-500">{displayName(user)}</span>
       </nav>
       {children}
     </div>

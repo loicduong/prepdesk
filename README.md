@@ -63,18 +63,21 @@ Checkout creates the subscription; webhooks are the only thing that change a pla
 ```bash
 cp .env.example .env.local   # fill in Supabase, Anthropic and Stripe test keys
 npm install
-npx supabase db push         # or run supabase/migrations/0001_init.sql in the SQL editor
+npx supabase db push         # or run the files in supabase/migrations/ in order in the SQL editor
 npm run dev
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+stripe listen --forward-to localhost:3000/api/stripe/webhook \
+  --events checkout.session.completed,customer.subscription.updated,customer.subscription.deleted,invoice.paid
 ```
+
+In Supabase, enable Authentication → Sign In / Providers → Allow anonymous sign-ins for the guest button.
 
 Checks: `npm run lint && npm run typecheck && npm test`
 
 ## Manual checklist
 
-1. Sign in with an email link → lands on New report.
+1. Click "Try the demo — no sign-up" → lands on New report with Guest in the nav.
 2. Generate a report → report page with 5 sections; History lists it.
 3. Generate until the Free limit → "You've used 3 of 3 reports this month" with an upgrade link.
 4. Upgrade with 4242 4242 4242 4242 → success page shows Pro is active; limit becomes 30.
 5. Manage billing → Stripe Customer Portal opens; cancel at period end keeps Pro.
-6. Open another user's report URL → 404.
+6. Open a report URL in a private window as a second guest → 404.
