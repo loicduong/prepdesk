@@ -2,7 +2,7 @@
 
 Paste a job posting, get an interview-prep report. A small paid web app built as a portfolio demo: instant guest accounts (no sign-up), a monthly credit ledger, Stripe subscriptions, and an AI call whose prompt and API key never leave the server.
 
-**Live demo:** <VERCEL_URL> (Stripe test mode, card 4242 4242 4242 4242)
+**Live demo:** https://prepdesk-ruddy.vercel.app (Stripe test mode, card 4242 4242 4242 4242)
 
 > Standalone demo project. Not affiliated with any company or client.
 
