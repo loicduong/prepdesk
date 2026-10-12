@@ -29,14 +29,15 @@ export async function POST(request: Request) {
       const { error } = await supabaseAdmin.rpc("record_stripe_event", { p_event_id: eventId, p_type: type });
       if (error) throw new Error(error.message);
     },
-    async applySubscription(customer, plan, periodStart) {
+    async applySubscription(customer, plan, periodStart, eventAt) {
       const { data, error } = await supabaseAdmin.rpc("apply_subscription", {
         p_customer: customer,
         p_plan: plan,
         p_period_start: periodStart?.toISOString() ?? null,
+        p_event_at: eventAt.toISOString(),
       });
       if (error) throw new Error(error.message);
-      return data as boolean;
+      return data as "applied" | "stale" | "unknown";
     },
   });
 

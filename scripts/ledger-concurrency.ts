@@ -50,6 +50,39 @@ async function main() {
     assert.equal(row.used, 2);
     assert.equal(row.remaining, 1);
 
+    // Free period roll-forward counts calendar months, never landing in the future.
+    // 11 months minus a day is 10 whole calendar months but more than 11 blocks of 30 days.
+    const start = new Date();
+    start.setUTCMonth(start.getUTCMonth() - 11);
+    start.setUTCDate(start.getUTCDate() + 1);
+    await supabase.from("profiles").update({ period_start: start.toISOString() }).eq("user_id", userId);
+    const { data: rolled } = await supabase.rpc("usage_for", { p_user: userId });
+    const rolledStart = new Date((rolled as { period_start: string }[])[0].period_start);
+    const expected = new Date(start);
+    expected.setUTCMonth(expected.getUTCMonth() + 10);
+    console.log(`period after 11 months minus a day: rolled 10 months = ${Math.abs(rolledStart.getTime() - expected.getTime()) < 1000}, not in future = ${rolledStart <= new Date()}`);
+    assert.ok(rolledStart <= new Date());
+    assert.ok(Math.abs(rolledStart.getTime() - expected.getTime()) < 1000);
+
+    // A Stripe event older than the last applied one does not change the plan.
+    const customer = `cus_test_${Date.now()}`;
+    await supabase.from("profiles").update({ stripe_customer_id: customer }).eq("user_id", userId);
+    const newer = await supabase.rpc("apply_subscription", {
+      p_customer: customer, p_plan: "free", p_period_start: null, p_event_at: "2026-10-12T10:00:00Z",
+    });
+    const older = await supabase.rpc("apply_subscription", {
+      p_customer: customer, p_plan: "pro", p_period_start: null, p_event_at: "2026-10-12T09:00:00Z",
+    });
+    const unknown = await supabase.rpc("apply_subscription", {
+      p_customer: "cus_missing", p_plan: "pro", p_period_start: null, p_event_at: "2026-10-12T11:00:00Z",
+    });
+    const { data: profile } = await supabase.from("profiles").select("plan").eq("user_id", userId).single();
+    console.log(`out-of-order events: ${newer.data}, ${older.data}, ${unknown.data}; plan ${profile?.plan}`);
+    assert.equal(newer.data, "applied");
+    assert.equal(older.data, "stale");
+    assert.equal(unknown.data, "unknown");
+    assert.equal(profile?.plan, "free");
+
     console.log("Ledger concurrency test passed");
   } finally {
     await supabase.auth.admin.deleteUser(userId);

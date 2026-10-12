@@ -3,7 +3,13 @@ import type Stripe from "stripe";
 export interface StripeEventDeps {
   seen(eventId: string): Promise<boolean>;
   record(eventId: string, type: string): Promise<void>;
-  applySubscription(customerId: string, plan: "free" | "pro", periodStart: Date | null): Promise<boolean>;
+  // "stale": the profile already reflects a newer Stripe event (Stripe does not guarantee order).
+  applySubscription(
+    customerId: string,
+    plan: "free" | "pro",
+    periodStart: Date | null,
+    eventAt: Date,
+  ): Promise<"applied" | "stale" | "unknown">;
 }
 
 type Change = { customer: string; plan: "free" | "pro"; periodStart: Date | null } | null;
@@ -45,11 +51,18 @@ export async function handleStripeEvent(
   if (await deps.seen(event.id)) return { status: 200, note: "duplicate" };
 
   const change = changeFor(event);
+  let note = "ignored";
   if (change) {
-    const applied = await deps.applySubscription(change.customer, change.plan, change.periodStart);
-    if (!applied) return { status: 500, note: "unknown customer" };
+    const outcome = await deps.applySubscription(
+      change.customer,
+      change.plan,
+      change.periodStart,
+      new Date(event.created * 1000),
+    );
+    if (outcome === "unknown") return { status: 500, note: "unknown customer" };
+    note = outcome === "stale" ? "stale" : `plan ${change.plan}`;
   }
 
   await deps.record(event.id, event.type);
-  return { status: 200, note: change ? `plan ${change.plan}` : "ignored" };
+  return { status: 200, note };
 }

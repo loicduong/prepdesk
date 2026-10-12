@@ -37,6 +37,8 @@ Concurrency test (`npm run ledger:test`, against a real Supabase project):
 finish twice: true, false; fail after finish: false
 fail twice: true, false
 usage after one refund: used 2, remaining 1
+period after 11 months minus a day: rolled 10 months = true, not in future = true
+out-of-order events: applied, stale, unknown; plan free
 Ledger concurrency test passed
 ```
 
