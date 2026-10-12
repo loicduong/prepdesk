@@ -26,6 +26,16 @@ describe("generateWithRetries", () => {
     expect(await generateWithRetries(call)).toEqual({ ok: true, report: good, attempts: 2 });
   });
 
+  it("reports each failed attempt to onFailure", async () => {
+    const onFailure = vi.fn();
+    const refusal = new Error("refusal");
+    const call = vi.fn().mockRejectedValueOnce(refusal).mockResolvedValueOnce({ role_summary: "x" }).mockResolvedValueOnce(good);
+    await generateWithRetries(call, 3, onFailure);
+    expect(onFailure).toHaveBeenNthCalledWith(1, 1, refusal);
+    expect(onFailure).toHaveBeenNthCalledWith(2, 2, null);
+    expect(onFailure).toHaveBeenCalledTimes(2);
+  });
+
   it("gives up after 3 failed attempts", async () => {
     const call = vi.fn().mockRejectedValue(new Error("timeout"));
     expect(await generateWithRetries(call)).toEqual({ ok: false, attempts: 3 });

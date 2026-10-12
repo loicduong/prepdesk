@@ -18,19 +18,39 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as { text?: unknown } | null;
   const text = typeof body?.text === "string" ? body.text : "";
 
+  const userId = data.user.id;
   const started = Date.now();
-  const result = await createReport(data.user.id, text, {
+  let attempts = 0;
+  const result = await createReport(userId, text, {
     ...credits,
-    generate: (posting) =>
-      generateWithRetries(demoMode ? async () => buildDemoReport(posting) : () => callClaudeOnce(posting)),
+    generate: async (posting) => {
+      const generated = await generateWithRetries(
+        demoMode ? async () => buildDemoReport(posting) : () => callClaudeOnce(posting),
+        3,
+        // Log the error class and HTTP status only, never the prompt, posting or model output.
+        (attempt, error) =>
+          console.warn(
+            JSON.stringify({
+              event: "model_attempt_failed",
+              user: userId,
+              attempt,
+              error: error instanceof Error ? error.constructor.name : "invalid_output",
+              status: (error as { status?: number } | null)?.status ?? null,
+            }),
+          ),
+      );
+      attempts = generated.attempts;
+      return generated;
+    },
     now: () => new Date(),
   });
   console.info(
     JSON.stringify({
       event: "create_report",
       mode: demoMode ? "demo" : "claude",
-      user: data.user.id,
+      user: userId,
       status: result.status,
+      attempts,
       ms: Date.now() - started,
     }),
   );
